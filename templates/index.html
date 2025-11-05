@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <title>Massage Buchungssystem</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  </head>
+  <body>
+    <main class="container">
+      <h1>Massage Buchungssystem (Prototyp)</h1>
+      <section class="control">
+        <label for="categorySelect">Kategorie auswählen</label>
+        <select id="categorySelect">
+          <option value="" selected disabled>Bitte eine Kategorie wählen</option>
+        </select>
+      </section>
+
+      <section class="control">
+        <p>Verfügbare Behandlungen</p>
+        <div id="treatmentOptions" class="options"></div>
+        <p id="noOptionsHint" class="hint">Bitte zuerst eine Kategorie auswählen.</p>
+      </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+  </body>
+</html>
