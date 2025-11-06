@@ -13,12 +13,10 @@ Ein einfacher Prototyp für ein webbasiertes Buchungssystem eines Massagestudios
 python -m venv .venv
 source .venv/bin/activate  # unter Windows: .venv\\Scripts\\activate
 pip install -r requirements.txt
-python app.py --init-db  # optional, siehe Hinweis unten
+python init_db.py
 ```
 
-> **Hinweis:** Die Flask-Anwendung initialisiert die SQLite-Datenbank beim Start automatisch. Der manuelle Aufruf von `python app.py --init-db` setzt die Beispieldaten auf den Ausgangszustand zurück.
-
-Der optionale Befehl erstellt die Datei `massage.db`, legt die benötigten Tabellen an und befüllt sie mit den Beispieldaten (Rückenmassage, Aromatherapie und Sportmassage mit unterschiedlichen Daueroptionen).
+Der letzte Befehl erstellt die Datei `massage.db`, legt die benötigten Tabellen an und befüllt sie mit Beispieldaten (Rückenmassage, Aromatherapie und Sportmassage mit unterschiedlichen Daueroptionen).
 
 ## Anwendung starten
 

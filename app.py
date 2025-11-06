@@ -1,24 +1,14 @@
 from __future__ import annotations
 
 import sqlite3
-import sys
-from flask import Flask, Response, jsonify, render_template, g
+from pathlib import Path
 
-from init_db import DATABASE_PATH, initialize_database
+from flask import Flask, jsonify, render_template, g
 
-# Ensure that the SQLite database exists and has the expected schema so that
-# API requests do not fail with "no such table" errors when the application is
-# started without running the separate initialization script beforehand.
-if "--init-db" not in sys.argv:
-    initialize_database()
+BASE_DIR = Path(__file__).resolve().parent
+DATABASE_PATH = BASE_DIR / "massage.db"
 
 app = Flask(__name__)
-
-
-@app.route("/favicon.ico")
-def favicon() -> Response:
-    """Serve the application favicon to avoid unnecessary 404 errors."""
-    return app.send_static_file("favicon.ico")
 
 
 def get_db() -> sqlite3.Connection:
@@ -26,26 +16,8 @@ def get_db() -> sqlite3.Connection:
     if "db" not in g:
         connection = sqlite3.connect(DATABASE_PATH)
         connection.row_factory = sqlite3.Row
-
-        try:
-            connection.execute("SELECT 1 FROM category LIMIT 1")
-        except (sqlite3.OperationalError, sqlite3.DatabaseError):
-            # If the schema is missing or the SQLite file is corrupted,
-            # recreate it and reopen the connection so subsequent queries work.
-            connection.close()
-            DATABASE_PATH.unlink(missing_ok=True)
-            initialize_database()
-            connection = sqlite3.connect(DATABASE_PATH)
-            connection.row_factory = sqlite3.Row
-
         g.db = connection
     return g.db
-
-
-def init_db() -> None:
-    """Reset the database file and load the default sample data."""
-    DATABASE_PATH.unlink(missing_ok=True)
-    initialize_database()
 
 
 @app.teardown_appcontext
@@ -91,8 +63,4 @@ def treatments(category_id: int) -> str:
 
 
 if __name__ == "__main__":
-    if "--init-db" in sys.argv:
-        init_db()
-        print("✅ Datenbank erfolgreich initialisiert.")
-    else:
-        app.run(debug=True)
+    app.run(debug=True)

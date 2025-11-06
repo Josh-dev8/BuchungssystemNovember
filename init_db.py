@@ -21,62 +21,41 @@ CREATE TABLE IF NOT EXISTS treatment (
 );
 """
 
-SAMPLE_DATA = {
-    "Rückenmassage": [
-        ("Kurz (30 Minuten)", 30),
-        ("Lang (60 Minuten)", 60),
-    ],
-    "Aromatherapie": [
-        ("Sanft (45 Minuten)", 45),
-    ],
-    "Sportmassage": [
-        ("Intensiv (90 Minuten)", 90),
-    ],
+SEED_DATA = {
+    "Rückenmassage": [30, 45],
+    "Aromatherapie": [45, 60],
+    "Sportmassage": [30, 60, 90],
 }
 
 
-def _populate_database(connection: sqlite3.Connection) -> None:
-    cursor = connection.cursor()
-    cursor.executescript(SCHEMA)
-
-    for category_name, treatments in SAMPLE_DATA.items():
-        cursor.execute(
-            "INSERT OR IGNORE INTO category(name) VALUES (?)",
-            (category_name,),
-        )
-        cursor.execute(
-            "SELECT id FROM category WHERE name = ?",
-            (category_name,),
-        )
-        row = cursor.fetchone()
-        if row is None:
-            raise RuntimeError(
-                f"Kategorie '{category_name}' konnte nicht angelegt werden."
-            )
-        category_id = row[0]
-
-        for treatment_name, duration in treatments:
-            cursor.execute(
-                """
-                INSERT OR IGNORE INTO treatment(name, duration_minutes, category_id)
-                VALUES (?, ?, ?)
-                """,
-                (treatment_name, duration, category_id),
-            )
-
-    connection.commit()
-
-
 def initialize_database() -> None:
-    DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        with sqlite3.connect(DATABASE_PATH) as connection:
-            _populate_database(connection)
-    except sqlite3.DatabaseError:
-        # Falls die Datei beschädigt ist, neu anlegen und nochmals befüllen.
-        DATABASE_PATH.unlink(missing_ok=True)
-        with sqlite3.connect(DATABASE_PATH) as connection:
-            _populate_database(connection)
+    DATABASE_PATH.touch(exist_ok=True)
+    with sqlite3.connect(DATABASE_PATH) as connection:
+        cursor = connection.cursor()
+        cursor.executescript(SCHEMA)
+
+        for category_name, durations in SEED_DATA.items():
+            cursor.execute(
+                "INSERT OR IGNORE INTO category(name) VALUES (?)",
+                (category_name,),
+            )
+            cursor.execute(
+                "SELECT id FROM category WHERE name = ?",
+                (category_name,),
+            )
+            category_id = cursor.fetchone()[0]
+
+            for duration in durations:
+                treatment_name = f"{category_name} — {duration} Minuten"
+                cursor.execute(
+                    """
+                    INSERT OR IGNORE INTO treatment(name, duration_minutes, category_id)
+                    VALUES (?, ?, ?)
+                    """,
+                    (treatment_name, duration, category_id),
+                )
+
+        connection.commit()
 
 
 if __name__ == "__main__":
